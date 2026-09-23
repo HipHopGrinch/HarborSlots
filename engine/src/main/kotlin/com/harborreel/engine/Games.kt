@@ -172,6 +172,7 @@ object Catalog {
             Cove, Bay, and Harbor are rare buoy names with larger prizes. The weight of each prize and the reel strips are the tables in this app.
         """.trimIndent(),
         kind = GameKind.LOCK_RESPIN,
+        type = GameType.LOCK_AND_RESPIN,
         reels = listOf(
             harborReel(0, 0),
             harborReel(1, 0).rotate(5),
@@ -207,6 +208,7 @@ object Catalog {
             The skiff is saved on this device until the next Squall Prize.
         """.trimIndent(),
         kind = GameKind.GALE,
+        type = GameType.BUILD_AND_BONUS,
         reels = listOf(
             brightworkReel(0),
             brightworkReel(1).rotate(4),
@@ -244,6 +246,7 @@ object Catalog {
             The triggering bet is the bet for every free spin.
         """.trimIndent(),
         kind = GameKind.FREE_SPINS,
+        type = GameType.FREE_SPINS,
         reels = listOf(
             marketReel(1),
             marketReel(2).rotate(6),
@@ -280,6 +283,7 @@ object Catalog {
             The multiplier weights are in this app's prize table.
         """.trimIndent(),
         kind = GameKind.JAR,
+        type = GameType.POT_BONUS,
         reels = listOf(
             patchReel(1, 2),
             patchReel(1, 2).rotate(5),
@@ -313,6 +317,7 @@ object Catalog {
             The spin still costs denomination × bet × 20.
         """.trimIndent(),
         kind = GameKind.TUMBLE,
+        type = GameType.TUMBLING_WAYS,
         reels = listOf(
             kelpReel(0),
             kelpReel(0).rotate(6),
@@ -346,6 +351,7 @@ object Catalog {
             The spin still costs denomination × bet × 20.
         """.trimIndent(),
         kind = GameKind.WAYS,
+        type = GameType.WAYS_243,
         reels = listOf(
             mesaReel(0),
             mesaReel(0).rotate(7),
@@ -379,6 +385,7 @@ object Catalog {
             The spin still costs denomination × bet × 20.
         """.trimIndent(),
         kind = GameKind.CLUSTER,
+        type = GameType.CLUSTER_PAYS,
         reels = listOf(
             reefReel(0),
             reefReel(0).rotate(5),
@@ -412,6 +419,7 @@ object Catalog {
             The triggering bet is the bet the wheel multiplies.
         """.trimIndent(),
         kind = GameKind.WHEEL,
+        type = GameType.PRIZE_WHEEL,
         reels = listOf(
             beaconReel(3),
             beaconReel(3).rotate(6),

@@ -99,6 +99,46 @@ class EngineTest {
     }
 
     @Test
+    fun everyGameTypeHasOneGame() {
+        assertEquals(GameType.entries.toSet(), Catalog.games.map { it.type }.toSet())
+        assertEquals(Catalog.games.size, Catalog.games.map { it.type }.distinct().size)
+    }
+
+    @Test
+    fun gameTypesMatchTheirMechanics() {
+        Catalog.games.forEach { game ->
+            assertEquals(GameType.forKind(game.kind), game.type, game.id)
+        }
+    }
+
+    @Test
+    fun unnamedTypeFallsBackToTheMechanic() {
+        val game = GameDef(
+            id = "test",
+            name = "Test",
+            blurb = "",
+            featureLabel = "",
+            rules = "",
+            kind = GameKind.CLUSTER,
+            reels = emptyList(),
+            paylines = emptyList(),
+            pays = emptyMap(),
+            wild = Symbol.PUFFER,
+            blockers = emptySet(),
+        )
+        assertEquals(GameType.CLUSTER_PAYS, game.type)
+    }
+
+    @Test
+    fun everyGameTypeDescribesTheFloor() {
+        GameType.entries.forEach { type ->
+            assertTrue(type.description.isNotBlank(), type.name)
+            assertTrue(type.floorExamples.isNotEmpty() || type.floorNote != null, type.name)
+            type.floorExamples.forEach { assertTrue(it.note.isNotBlank(), it.name) }
+        }
+    }
+
+    @Test
     fun returnRatesStayInAPlayableBand() {
         val quiet = rates(Payout.QUIET)
         val cruise = rates(Payout.CRUISE)

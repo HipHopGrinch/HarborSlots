@@ -174,6 +174,7 @@ data class GameDef(
     val featureLabel: String,
     val rules: String,
     val kind: GameKind,
+    val type: GameType = GameType.forKind(kind),
     val reels: List<List<Symbol>>,
     val paylines: List<List<Int>>,
     val pays: Map<Symbol, Map<Int, Int>>,
