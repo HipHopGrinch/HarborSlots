@@ -20,6 +20,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -117,6 +121,10 @@ private fun BalancePlaque(label: String, value: String, modifier: Modifier) {
 private fun GamePoster(game: GameDef, modifier: Modifier, onOpen: (String) -> Unit) {
     val art = posterArt(game.id)
     val shape = RoundedCornerShape(18.dp)
+    var info by remember(game.id) { mutableStateOf(false) }
+    if (info) {
+        GameTypeDialog(game) { info = false }
+    }
     Box(
         modifier
             .aspectRatio(0.78f)
@@ -164,6 +172,11 @@ private fun GamePoster(game: GameDef, modifier: Modifier, onOpen: (String) -> Un
                 )
             }
         }
+        GameInfoButton(
+            game,
+            onClick = { info = true },
+            modifier = Modifier.align(Alignment.TopEnd).padding(2.dp),
+        )
     }
 }
 

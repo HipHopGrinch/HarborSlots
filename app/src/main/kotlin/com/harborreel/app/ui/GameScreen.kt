@@ -102,6 +102,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
     var banner by remember(game.id) { mutableStateOf(alreadyShown?.settledBanner() ?: "Press SPIN") }
     var busy by remember(game.id) { mutableStateOf(false) }
     var rules by remember(game.id) { mutableStateOf(false) }
+    var info by remember(game.id) { mutableStateOf(false) }
     var shownWin by remember(game.id) { mutableLongStateOf(alreadyShown?.totalWin ?: 0L) }
     var strips by remember(game.id) { mutableStateOf(alreadyShown?.settledGrid() ?: openingGrid(game)) }
     var positions by remember(game.id) { mutableStateOf(List(5) { 0f }) }
@@ -119,6 +120,9 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             text = { Text(game.rules) },
             confirmButton = { TextButton(onClick = { rules = false }) { Text("Close") } },
         )
+    }
+    if (info) {
+        GameTypeDialog(game) { info = false }
     }
 
     LaunchedEffect(outcome?.spinId) {
@@ -247,6 +251,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
                 Text("Games")
             }
             Spacer(Modifier.weight(1f))
+            GameInfoButton(game, onClick = { info = true }, enabled = !busy)
             TextButton(onClick = { rules = true }, enabled = !busy) { Text("Rules") }
         }
 
