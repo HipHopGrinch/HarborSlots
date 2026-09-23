@@ -5,6 +5,10 @@ enum class GameKind {
     GALE,
     FREE_SPINS,
     JAR,
+    WAYS,
+    TUMBLE,
+    CLUSTER,
+    WHEEL,
 }
 
 data class Cell(
@@ -69,6 +73,31 @@ data class FreeSpins(
     override val detail: String = "${frames.size} free spins"
 }
 
+data class TumbleFrame(
+    val grid: List<List<Cell>>,
+    val wins: List<LineWin>,
+    val multiplier: Int,
+    val win: Long,
+)
+
+data class Tumble(
+    val frames: List<TumbleFrame>,
+    val settled: List<List<Cell>>,
+    override val amount: Long,
+) : FeatureResult {
+    override val title: String = "Reel Drop"
+    override val detail: String = if (frames.isEmpty()) "Symbols fell in" else "${frames.size} more drop${if (frames.size == 1) "" else "s"}"
+}
+
+data class WheelSpin(
+    val wedge: String,
+    val wedgeIndex: Int,
+    override val amount: Long,
+) : FeatureResult {
+    override val title: String = "Prize Wheel"
+    override val detail: String = wedge
+}
+
 data class JarTip(
     val jarBefore: Long,
     val multiplier: Int,
@@ -101,10 +130,28 @@ data class HistoryEntry(
     val win: Long,
 )
 
+enum class Payout(
+    val id: String,
+    val title: String,
+    val blurb: String,
+    /** Extra feature symbols wound onto each reel, spread along the strip. */
+    val extraFeatures: Int,
+) {
+    QUIET("quiet", "Quiet", "Feature symbols stay scarce.", 0),
+    CRUISE("cruise", "Cruise", "Feature symbols show up about as often as a cruise-floor video.", 1),
+    GENEROUS("generous", "Generous", "Feature symbols come up often.", 2),
+    ;
+
+    companion object {
+        fun fromId(id: String?): Payout = entries.firstOrNull { it.id == id } ?: CRUISE
+    }
+}
+
 data class PlayerState(
     val credits: Long = 20_000,
     val denom: Int = 1,
     val betPerLine: Int = 1,
+    val payout: Payout = Payout.CRUISE,
     val lineId: String = CruiseLines.defaultId,
     val points: Map<String, Long> = CruiseLines.ids.associateWith { 0L },
     /** Wagered cents on each line that have not yet made a whole point. */

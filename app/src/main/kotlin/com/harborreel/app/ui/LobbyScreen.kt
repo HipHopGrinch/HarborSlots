@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,18 +55,14 @@ fun LobbyScreen(snapshot: PlayerState, onOpen: (String) -> Unit) {
                 .padding(horizontal = 8.dp),
             contentScale = ContentScale.Fit,
         )
-        val games = Catalog.games
-        Column(
-            Modifier.weight(1f),
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                GamePoster(games[0], Modifier.weight(1f), onOpen)
-                GamePoster(games[1], Modifier.weight(1f), onOpen)
-            }
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                GamePoster(games[2], Modifier.weight(1f), onOpen)
-                GamePoster(games[3], Modifier.weight(1f), onOpen)
+            items(Catalog.games, key = { it.id }) { game ->
+                GamePoster(game, Modifier, onOpen)
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -119,7 +119,7 @@ private fun GamePoster(game: GameDef, modifier: Modifier, onOpen: (String) -> Un
     val shape = RoundedCornerShape(18.dp)
     Box(
         modifier
-            .fillMaxHeight()
+            .aspectRatio(0.78f)
             .clip(shape)
             .border(2.dp, Gold, shape)
             .clickable { onOpen(game.id) },
@@ -173,12 +173,20 @@ fun gameLogo(gameId: String): Int = when (gameId) {
     "harbor" -> R.drawable.logo_harbor
     "brightwork" -> R.drawable.logo_bright
     "market" -> R.drawable.logo_market
-    else -> R.drawable.logo_patch
+    "patch" -> R.drawable.logo_patch
+    "kelp" -> R.drawable.logo_kelp
+    "mesa" -> R.drawable.logo_mesa
+    "reef" -> R.drawable.logo_reef
+    else -> R.drawable.logo_beacon
 }
 
 private fun posterArt(gameId: String): PosterArt = when (gameId) {
     "harbor" -> PosterArt(R.drawable.bg_harbor, R.drawable.cast_harbor)
     "brightwork" -> PosterArt(R.drawable.bg_brightwork, R.drawable.cast_bright)
     "market" -> PosterArt(R.drawable.bg_market, R.drawable.cast_market)
-    else -> PosterArt(R.drawable.bg_patch, R.drawable.cast_patch)
+    "patch" -> PosterArt(R.drawable.bg_patch, R.drawable.cast_patch)
+    "kelp" -> PosterArt(R.drawable.bg_kelp, R.drawable.cast_kelp)
+    "mesa" -> PosterArt(R.drawable.bg_mesa, R.drawable.cast_mesa)
+    "reef" -> PosterArt(R.drawable.bg_reef, R.drawable.cast_reef)
+    else -> PosterArt(R.drawable.bg_beacon, R.drawable.cast_beacon)
 }

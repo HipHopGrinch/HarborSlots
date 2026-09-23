@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import com.harborreel.engine.Casino
+import com.harborreel.engine.Payout
 import com.harborreel.engine.Rng
 import com.harborreel.engine.SaveCodec
 import com.harborreel.engine.SpinAttempt
@@ -62,6 +63,11 @@ class CasinoViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setLine(lineId: String) {
         casino.setLine(lineId)
+        publish()
+    }
+
+    fun setPayout(payout: Payout) {
+        casino.setPayout(payout)
         publish()
     }
 

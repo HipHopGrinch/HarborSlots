@@ -108,6 +108,10 @@ class Casino(
         state = state.copy(lineId = lineId)
     }
 
+    fun setPayout(payout: Payout) {
+        state = state.copy(payout = payout)
+    }
+
     fun addCredits(amount: Long) {
         if (amount <= 0) return
         state = state.copy(credits = state.credits + amount)
@@ -148,6 +152,7 @@ object SaveCodec {
         appendLine("betPerLine=${state.betPerLine}")
         appendLine("bet=${state.bet}")
         appendLine("line=${state.lineId}")
+        appendLine("payout=${state.payout.id}")
         appendLine("skiff=${state.skiff}")
         appendLine("jar=${state.jar}")
         appendLine("points=" + state.points.entries.joinToString(",") { "${it.key}:${it.value}" })
@@ -187,6 +192,7 @@ object SaveCodec {
                 denom = values["denom"]?.toIntOrNull() ?: 1,
                 betPerLine = betPerLine,
                 lineId = values["line"] ?: CruiseLines.defaultId,
+                payout = Payout.fromId(values["payout"]),
                 points = points,
                 pointRemainder = remainder,
                 skiff = values["skiff"]?.toIntOrNull() ?: 0,

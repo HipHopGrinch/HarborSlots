@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -183,13 +182,13 @@ private fun LineWordmark(id: String) {
             color = CarnivalRed,
             fontFamily = MartelHeavy,
             fontWeight = FontWeight.Black,
-            fontSize = 24.sp,
-            letterSpacing = 0.6.sp,
+            fontSize = 21.sp,
+            letterSpacing = 0.4.sp,
             maxLines = 1,
             softWrap = false,
             style = WordmarkStyle,
             modifier = Modifier.graphicsLayer {
-                scaleX = 1.1f
+                scaleX = 1.06f
                 transformOrigin = TransformOrigin(0f, 0.5f)
             },
         )
@@ -221,12 +220,12 @@ private fun LineWordmark(id: String) {
             fontFamily = InterBold,
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
-            letterSpacing = (-0.6).sp,
+            letterSpacing = (-0.4).sp,
             maxLines = 1,
             softWrap = false,
             style = WordmarkStyle,
             modifier = Modifier.graphicsLayer {
-                scaleX = 0.94f
+                scaleX = 0.98f
                 transformOrigin = TransformOrigin(0f, 0.5f)
             },
         )
@@ -236,7 +235,7 @@ private fun LineWordmark(id: String) {
             fontFamily = RobotoRegular,
             fontWeight = FontWeight.Normal,
             fontSize = 22.sp,
-            letterSpacing = (-1.05).sp,
+            letterSpacing = (-0.5).sp,
             maxLines = 1,
             softWrap = false,
             style = WordmarkStyle,
@@ -246,8 +245,8 @@ private fun LineWordmark(id: String) {
             color = WordmarkIvory,
             fontFamily = PlayfairBold,
             fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            letterSpacing = 3.sp,
+            fontSize = 18.sp,
+            letterSpacing = 1.6.sp,
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Clip,
@@ -258,41 +257,37 @@ private fun LineWordmark(id: String) {
             color = Color.White,
             fontFamily = DmSansSemiBold,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 26.sp,
-            letterSpacing = 0.15.sp,
+            fontSize = 22.sp,
+            letterSpacing = 0.4.sp,
             maxLines = 1,
             softWrap = false,
             style = WordmarkStyle,
         )
-        else -> Column {
+        else -> Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 "Virgin",
                 color = VirginRed,
                 fontFamily = CaveatSemiBold,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 34.sp,
+                fontSize = 28.sp,
                 maxLines = 1,
                 softWrap = false,
                 style = WordmarkStyle,
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .graphicsLayer {
-                        rotationZ = -15f
-                        transformOrigin = TransformOrigin(0f, 1f)
-                    },
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = -12f
+                    transformOrigin = TransformOrigin(0.15f, 0.7f)
+                },
             )
             Text(
                 "VOYAGES",
                 color = Color.White,
                 fontFamily = Monoton,
-                fontSize = 13.sp,
-                letterSpacing = 1.4.sp,
+                fontSize = 16.sp,
+                letterSpacing = 0.8.sp,
                 maxLines = 1,
                 softWrap = false,
                 style = WordmarkStyle,
-                modifier = Modifier
-                    .offset(y = (-4).dp)
-                    .padding(start = 8.dp),
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
     }

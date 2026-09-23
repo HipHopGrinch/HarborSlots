@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.harborreel.engine.Catalog
+import com.harborreel.engine.Payout
 import com.harborreel.engine.PlayerState
 
 @Composable
@@ -35,6 +36,7 @@ fun BankScreen(
     onClear: () -> Unit,
     onClearHistory: () -> Unit,
     onResetPoints: () -> Unit,
+    onSetPayout: (Payout) -> Unit,
 ) {
     var amount by rememberSaveable { mutableStateOf("200") }
     var confirmClear by rememberSaveable { mutableStateOf(false) }
@@ -122,6 +124,24 @@ fun BankScreen(
                 TextButton(onClick = { confirmHistory = true }) { Text("Clear history") }
                 TextButton(onClick = { confirmPoints = true }) { Text("Reset points") }
             }
+            Text("Payout", color = Foam, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 16.dp))
+            Text(
+                "One setting for every game. It changes how often feature symbols are wound onto the reels.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+            )
+            Row {
+                Payout.entries.forEach { pace ->
+                    TextButton(onClick = { onSetPayout(pace) }) {
+                        Text(
+                            pace.title,
+                            color = if (snapshot.payout == pace) Gold else Foam,
+                            fontWeight = if (snapshot.payout == pace) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    }
+                }
+            }
+            Text(snapshot.payout.blurb, color = Gold, fontSize = 13.sp)
         }
         item {
             Text("How a spin is chosen", color = Foam, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))

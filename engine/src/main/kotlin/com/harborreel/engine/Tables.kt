@@ -45,6 +45,18 @@ fun skiffStage(progress: Int): SkiffStage = when {
     else -> SkiffStage("Keel line", 1, 12)
 }
 
+val WHEEL_WEDGES: List<Pair<NamedPrize, Int>> = listOf(
+    NamedPrize(10, "Ripple") to 28,
+    NamedPrize(18, "Swell") to 22,
+    NamedPrize(36, "Crest") to 16,
+    NamedPrize(70, "Breaker") to 8,
+    NamedPrize(140, "Beam") to 4,
+    NamedPrize(500, "Lighthouse") to 1,
+)
+
+const val TUMBLE_CAP = 6
+const val TUMBLE_MULT_CAP = 5
+
 val PAYLINES: List<List<Int>> = listOf(
     listOf(1, 1, 1, 1, 1),
     listOf(0, 0, 0, 0, 0),

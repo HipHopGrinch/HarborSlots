@@ -72,6 +72,11 @@ import com.harborreel.engine.GameKind
 import com.harborreel.engine.LockRespin
 import com.harborreel.engine.SpinOutcome
 import com.harborreel.engine.Symbol
+import com.harborreel.engine.TUMBLE_CAP
+import com.harborreel.engine.TUMBLE_MULT_CAP
+import com.harborreel.engine.Tumble
+import com.harborreel.engine.WHEEL_WEDGES
+import com.harborreel.engine.WheelSpin
 import com.harborreel.engine.openingGrid
 import com.harborreel.engine.skiffStage
 import kotlin.random.Random
@@ -103,6 +108,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
     var blurAmounts by remember(game.id) { mutableStateOf(List(5) { 0f }) }
     var celebrating by remember(game.id) { mutableStateOf(false) }
     var callout by remember(game.id) { mutableStateOf<String?>(null) }
+    var wheelIndex by remember(game.id) { mutableStateOf<Int?>(null) }
     var held by remember(game.id) { mutableStateOf(noHolds()) }
     val symbols = remember(game.id) { game.reels.flatten().distinct() }
 
@@ -121,6 +127,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
         busy = true
         celebrating = false
         callout = null
+        wheelIndex = null
         shownWin = 0L
         highlights = emptySet()
         banner = "Spinning…"
@@ -134,7 +141,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
         positions = List(5) { 0f }
         blurAmounts = List(5) { 0f }
         highlights = spin.lineWins.flatMap { it.cells }.toSet()
-        banner = baseBanner(spin.lineWins.size, spin.scatterPay, spin.totalWin, spin.feature == null)
+        banner = baseBanner(spin.lineWins.size, spin.scatterPay, spin.totalWin, spin.feature == null, winNoun(game.kind))
         when (val feature = spin.feature) {
             is LockRespin -> {
                 callout = "LOCK & RESPIN"
@@ -178,6 +185,30 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
                     if (frame.win > 0L) delay(280)
                 }
                 banner = "${feature.title}. ${feature.detail}"
+            }
+            is Tumble -> {
+                callout = "TUMBLE"
+                for (frame in feature.frames) {
+                    highlights = emptySet()
+                    banner = "Drop ×${frame.multiplier}"
+                    grid = frame.grid
+                    strips = frame.grid
+                    positions = List(5) { 0f }
+                    delay(320)
+                    highlights = frame.wins.flatMap { it.cells }.toSet()
+                    delay(420)
+                }
+                grid = feature.settled
+                strips = feature.settled
+                positions = List(5) { 0f }
+                highlights = emptySet()
+                banner = "${feature.title}. ${feature.detail}"
+            }
+            is WheelSpin -> {
+                callout = "PRIZE WHEEL"
+                wheelIndex = feature.wedgeIndex
+                banner = "${feature.title}. ${feature.detail}"
+                delay(1700)
             }
             null -> Unit
             else -> {
@@ -224,7 +255,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             contentDescription = game.name,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp)
+                .height(61.dp)
                 .padding(horizontal = 16.dp, vertical = 2.dp),
             contentScale = ContentScale.Fit,
         )
@@ -245,7 +276,12 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             jar = snapshot.jar,
         )
 
-        SceneLife(game.id, Modifier.weight(1f).fillMaxWidth())
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            SceneLife(game.id, Modifier.fillMaxSize())
+            wheelIndex?.let { index ->
+                PrizeWheel(index, Modifier.fillMaxSize().padding(12.dp))
+            }
+        }
 
         BoxWithConstraints(
             Modifier
@@ -314,7 +350,11 @@ private fun sceneFor(gameId: String): Int = when (gameId) {
     "harbor" -> R.drawable.bg_harbor
     "brightwork" -> R.drawable.bg_brightwork
     "market" -> R.drawable.bg_market
-    else -> R.drawable.bg_patch
+    "patch" -> R.drawable.bg_patch
+    "kelp" -> R.drawable.bg_kelp
+    "mesa" -> R.drawable.bg_mesa
+    "reef" -> R.drawable.bg_reef
+    else -> R.drawable.bg_beacon
 }
 
 @Composable
@@ -368,11 +408,55 @@ private fun CabinetMeters(game: GameDef, bet: Int, skiff: Int, jar: Long) {
                 }
             }
         }
+        GameKind.WAYS -> {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                OrnateMeter("243 WAYS", "ANY ROW", Color(0xFFFFD35A), featured = true)
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OrnateMeter("3 REELS", "PAYS", Color(0xFF4DB7FF), Modifier.weight(1f))
+                    OrnateMeter("4 REELS", "PAYS", Color(0xFF3DDC6A), Modifier.weight(1f))
+                    OrnateMeter("5 REELS", "PAYS", Color(0xFFE24BFF), Modifier.weight(1f))
+                }
+            }
+        }
+        GameKind.TUMBLE -> {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                OrnateMeter("DROPS", "×1 TO ×$TUMBLE_MULT_CAP", Color(0xFF3DDC6A), featured = true)
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OrnateMeter("LEFT", "TO RIGHT", Color(0xFF4DB7FF), Modifier.weight(1f))
+                    OrnateMeter("WILD", "OTTER", Color(0xFFFFD35A), Modifier.weight(1f))
+                    OrnateMeter("CAP", "$TUMBLE_CAP DROPS", Color(0xFFE24BFF), Modifier.weight(1f))
+                }
+            }
+        }
+        GameKind.CLUSTER -> {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                OrnateMeter("CLUSTERS", "3 OR MORE", Color(0xFFFF8A6A), featured = true)
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OrnateMeter("TOUCH", "EDGES", Color(0xFF4DB7FF), Modifier.weight(1f))
+                    OrnateMeter("WILD", "PUFFER", Color(0xFFFFD35A), Modifier.weight(1f))
+                    OrnateMeter("BIGGER", "PAYS MORE", Color(0xFF3DDC6A), Modifier.weight(1f))
+                }
+            }
+        }
+        GameKind.WHEEL -> {
+            val stake = coin.toLong()
+            Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                OrnateMeter("WHEEL", "3 BEACONS", Color(0xFFFFD35A), featured = true)
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OrnateMeter("RIPPLE", (wedgeCoins("Ripple") * stake).money(), Color(0xFF4DB7FF), Modifier.weight(1f))
+                    OrnateMeter("BEAM", (wedgeCoins("Beam") * stake).money(), Color(0xFFE24BFF), Modifier.weight(1f))
+                    OrnateMeter("LIGHT", (wedgeCoins("Lighthouse") * stake).money(), Color(0xFFFFD35A), Modifier.weight(1f))
+                }
+            }
+        }
     }
 }
 
 private fun prizeCoins(name: String): Int =
     BUOY_PRIZES.first { it.first.name == name }.first.coins
+
+private fun wedgeCoins(name: String): Long =
+    WHEEL_WEDGES.first { it.first.name == name }.first.coins.toLong()
 
 @Composable
 private fun OrnateMeter(
@@ -754,6 +838,7 @@ private fun buoyHolds(grid: List<List<Cell>>): List<List<Cell?>> =
 private fun SpinOutcome.settledGrid(): List<List<Cell>> = when (val feature = feature) {
     is LockRespin -> feature.frames.lastOrNull()?.grid ?: grid
     is FreeSpins -> feature.frames.lastOrNull()?.grid ?: grid
+    is Tumble -> feature.settled
     else -> grid
 }
 
@@ -765,14 +850,20 @@ private fun SpinOutcome.settledBanner(): String {
     return if (feature != null) {
         "${feature.title}. ${feature.detail}"
     } else {
-        baseBanner(lineWins.size, scatterPay, totalWin, settled = true)
+        baseBanner(lineWins.size, scatterPay, totalWin, settled = true, winNoun(Catalog.byId(gameId).kind))
     }
 }
 
-private fun baseBanner(lines: Int, scatterPay: Long, total: Long, settled: Boolean): String {
+private fun winNoun(kind: GameKind): String = when (kind) {
+    GameKind.WAYS, GameKind.TUMBLE -> "way"
+    GameKind.CLUSTER -> "cluster"
+    else -> "line"
+}
+
+private fun baseBanner(lines: Int, scatterPay: Long, total: Long, settled: Boolean, noun: String = "line"): String {
     if (!settled) return ""
     val parts = mutableListOf<String>()
-    if (lines > 0) parts += "$lines line${if (lines == 1) "" else "s"}"
+    if (lines > 0) parts += "$lines $noun${if (lines == 1) "" else "s"}"
     if (scatterPay > 0) parts += "scatter ${scatterPay.grouped()}"
     return if (total == 0L) "No win" else parts.joinToString(" · ").ifBlank { "Win" }
 }

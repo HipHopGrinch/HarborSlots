@@ -16,8 +16,13 @@ fun resolveSpin(
     var credits = state.credits - wager
     val (points, remainder) = awardSlotPoints(state.lineId, wager, state.points, state.pointRemainder)
 
-    val grid = spinGrid(game, rng)
-    val lineWins = evaluateLines(game, grid, coin)
+    val window = spinWindow(game, rng, state.payout.extraFeatures)
+    val grid = window.grid
+    val lineWins = when (game.kind) {
+        GameKind.WAYS, GameKind.TUMBLE -> evaluateWays(game, grid, coin)
+        GameKind.CLUSTER -> evaluateClusters(game, grid, coin)
+        else -> evaluateLines(game, grid, coin)
+    }
     var total = lineWins.sumOf { it.amount }
 
     val scatterCount = countSymbol(grid, game.scatter)
@@ -75,6 +80,23 @@ fun resolveSpin(
                 jar = 0L
             }
         }
+        GameKind.WAYS, GameKind.CLUSTER -> Unit
+        GameKind.TUMBLE -> {
+            if (lineWins.isNotEmpty()) {
+                val drop = tumbleAfter(game, window.reels, window.stops, grid, lineWins, coin)
+                feature = drop
+                total += drop.amount
+            }
+        }
+        GameKind.WHEEL -> {
+            if (scatterCount >= 3) {
+                val index = rng.pickIndex(WHEEL_WEDGES)
+                val wedge = WHEEL_WEDGES[index].first
+                val amount = wedge.coins.toLong() * coin
+                feature = WheelSpin(wedge.name ?: "Prize", index, amount)
+                total += amount
+            }
+        }
     }
 
     credits += total
@@ -104,14 +126,46 @@ fun resolveSpin(
     return next to outcome
 }
 
-private fun spinGrid(game: GameDef, rng: RandomSource): List<List<Cell>> =
-    game.reels.map { reel ->
+private data class SpinWindow(
+    val stops: IntArray,
+    val grid: List<List<Cell>>,
+    val reels: List<List<Symbol>>,
+)
+
+private fun featureSymbol(game: GameDef): Symbol? = when (game.kind) {
+    GameKind.LOCK_RESPIN -> Symbol.BUOY
+    GameKind.GALE, GameKind.FREE_SPINS, GameKind.JAR, GameKind.WHEEL -> game.scatter
+    else -> null
+}
+
+private fun woundReel(reel: List<Symbol>, feature: Symbol?, extra: Int): List<Symbol> {
+    if (feature == null || extra <= 0 || feature !in reel) return reel
+    val out = reel.toMutableList()
+    val step = (reel.size / (extra + 1)).coerceAtLeast(1)
+    repeat(extra) { index ->
+        val at = ((index + 1) * step + index).coerceAtMost(out.size)
+        out.add(at, feature)
+    }
+    return out
+}
+
+private fun spinWindow(game: GameDef, rng: RandomSource, extraFeatures: Int): SpinWindow {
+    val feature = featureSymbol(game)
+    val reels = game.reels.map { woundReel(it, feature, extraFeatures) }
+    val stops = IntArray(reels.size)
+    val grid = reels.mapIndexed { reelIndex, reel ->
         val stop = rng.nextInt(reel.size)
+        stops[reelIndex] = stop
         List(3) { row ->
             val symbol = reel[(stop + row) % reel.size]
             decorate(game, symbol, rng)
         }
     }
+    return SpinWindow(stops, grid, reels)
+}
+
+private fun spinGrid(game: GameDef, rng: RandomSource, extraFeatures: Int): List<List<Cell>> =
+    spinWindow(game, rng, extraFeatures).grid
 
 private fun decorate(game: GameDef, symbol: Symbol, rng: RandomSource): Cell = when {
     game.kind == GameKind.LOCK_RESPIN && symbol == Symbol.BUOY -> {
@@ -169,6 +223,60 @@ private fun lockRespin(start: List<List<Cell>>, rng: RandomSource, coin: Long): 
     return LockRespin(frames, coins.toLong() * coin, full)
 }
 
+private fun tumbleAfter(
+    game: GameDef,
+    reels: List<List<Symbol>>,
+    initialStops: IntArray,
+    initialGrid: List<List<Cell>>,
+    initialWins: List<LineWin>,
+    coin: Long,
+): Tumble {
+    var stops = initialStops.copyOf()
+    var grid = initialGrid
+    var pending = initialWins
+    var multiplier = 1
+    var extra = 0L
+    val frames = mutableListOf<TumbleFrame>()
+    var guard = 0
+    while (pending.isNotEmpty() && guard < TUMBLE_CAP) {
+        val removed = pending.flatMap { it.cells }.toSet()
+        val collapsed = collapse(reels, stops, grid, removed)
+        stops = collapsed.first
+        grid = collapsed.second
+        multiplier = minOf(TUMBLE_MULT_CAP, multiplier + 1)
+        pending = evaluateWays(game, grid, coin)
+        guard++
+        if (pending.isEmpty()) break
+        val win = pending.sumOf { it.amount } * multiplier
+        extra += win
+        frames += TumbleFrame(grid, pending, multiplier, win)
+    }
+    return Tumble(frames, grid, extra)
+}
+
+private fun collapse(
+    reels: List<List<Symbol>>,
+    stops: IntArray,
+    grid: List<List<Cell>>,
+    removed: Set<Pair<Int, Int>>,
+): Pair<IntArray, List<List<Cell>>> {
+    val nextStops = stops.copyOf()
+    val nextGrid = grid.mapIndexed { reel, column ->
+        val strip = reels[reel]
+        val kept = column.mapIndexedNotNull { row, cell ->
+            if (reel to row in removed) null else cell
+        }
+        val need = column.size - kept.size
+        val incoming = ArrayDeque<Cell>()
+        repeat(need) {
+            nextStops[reel] = (nextStops[reel] - 1 + strip.size) % strip.size
+            incoming.addFirst(Cell(strip[nextStops[reel]]))
+        }
+        incoming + kept
+    }
+    return nextStops to nextGrid
+}
+
 private fun awardedSpins(scatterCount: Int): Int = when {
     scatterCount >= 5 -> 20
     scatterCount == 4 -> 12
@@ -183,7 +291,7 @@ private fun freeSpins(game: GameDef, rng: RandomSource, coin: Long, trigger: Int
     while (left > 0 && played < 80) {
         played += 1
         left -= 1
-        val natural = spinGrid(game, rng)
+        val natural = spinGrid(game, rng, 0)
         val wildReel = rng.nextInt(game.reels.size)
         val grid = natural.mapIndexed { index, reel ->
             if (index != wildReel) {

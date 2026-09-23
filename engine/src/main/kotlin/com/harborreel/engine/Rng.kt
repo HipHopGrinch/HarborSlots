@@ -51,14 +51,16 @@ class ZeroRng : RandomSource {
     }
 }
 
-fun <T> RandomSource.pick(table: List<Pair<T, Int>>): T {
+fun <T> RandomSource.pick(table: List<Pair<T, Int>>): T = table[pickIndex(table)].first
+
+fun <T> RandomSource.pickIndex(table: List<Pair<T, Int>>): Int {
     require(table.isNotEmpty())
     val total = table.sumOf { it.second }
     require(total > 0)
     var roll = nextInt(total)
-    for ((item, weight) in table) {
-        if (roll < weight) return item
-        roll -= weight
+    for ((index, pair) in table.withIndex()) {
+        if (roll < pair.second) return index
+        roll -= pair.second
     }
-    return table.last().first
+    return table.lastIndex
 }

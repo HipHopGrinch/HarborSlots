@@ -40,6 +40,6 @@ fun symbolColor(symbol: Symbol): Color = when (symbol) {
     Symbol.COMPASS, Symbol.KEEL, Symbol.NOODLE, Symbol.APPLE -> Color(0xFF7EB6FF)
     Symbol.WHEEL, Symbol.PLANK, Symbol.DUMPLING, Symbol.CLOVER -> Color(0xFFB8A1FF)
     Symbol.ROPE, Symbol.CANVAS, Symbol.TEA, Symbol.BOOT -> Color(0xFF8FD6A4)
-    Symbol.BELL, Symbol.GULL, Symbol.FAN, Symbol.LANTERN, Symbol.LAMP -> Color(0xFFF0D48A)
+    Symbol.BELL, Symbol.GULL, Symbol.FAN, Symbol.LANTERN, Symbol.LAMP, Symbol.SUNSET, Symbol.BEACON -> Color(0xFFF0D48A)
     else -> Color(0xFFD5DEEA)
 }

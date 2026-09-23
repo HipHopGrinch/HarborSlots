@@ -60,6 +60,7 @@ class EngineTest {
             denom = 1,
             betPerLine = 2,
             lineId = "princess",
+            payout = Payout.GENEROUS,
             points = CruiseLines.ids.associateWith { if (it == "princess") 80L else 0L },
             skiff = 17,
             jar = 36,
@@ -70,6 +71,7 @@ class EngineTest {
         assertEquals(40, decoded.bet)
         assertEquals(2, decoded.betPerLine)
         assertEquals("princess", decoded.lineId)
+        assertEquals(Payout.GENEROUS, decoded.payout)
         assertEquals(80L, decoded.points.getValue("princess"))
         assertEquals(17, decoded.skiff)
         assertEquals(36L, decoded.jar)
@@ -86,18 +88,37 @@ class EngineTest {
     }
 
     @Test
-    fun returnRatesStayInAPlayableBand() {
-        val rates = Catalog.games.associate { game ->
-            game.id to returnRate(game.id, spins = 12_000)
-        }
-        rates.forEach { (id, rate) -> println("$id rtp=$rate") }
-        rates.forEach { (id, rate) ->
-            assertTrue(rate in 0.80..1.08, "$id rtp=$rate")
-        }
+    fun fiveAceReelsPay243Ways() {
+        val game = Catalog.mesa.copy(
+            reels = List(5) { List(6) { Symbol.ACE } },
+            pays = mapOf(Symbol.ACE to mapOf(5 to 12)),
+        )
+        val (_, outcome) = resolveSpin(game, PlayerState(credits = 10_000, denom = 1, betPerLine = 1), ZeroRng(), 1)
+        assertEquals(12L * 243L, outcome.totalWin)
+        assertEquals(null, outcome.feature)
     }
 
-    private fun returnRate(gameId: String, spins: Int): Double {
-        val casino = Casino(Rng(42), PlayerState(credits = 1_000_000_000L, denom = 1, betPerLine = 1))
+    @Test
+    fun returnRatesStayInAPlayableBand() {
+        val quiet = rates(Payout.QUIET)
+        val cruise = rates(Payout.CRUISE)
+        val generous = rates(Payout.GENEROUS)
+        println("quiet $quiet")
+        println("cruise $cruise")
+        println("generous $generous")
+        quiet.forEach { (id, rate) -> assertTrue(rate in 0.80..1.08, "quiet $id rtp=$rate") }
+        cruise.forEach { (id, rate) -> assertTrue(rate in 0.80..1.40, "cruise $id rtp=$rate") }
+        generous.forEach { (id, rate) -> assertTrue(rate in 0.80..2.40, "generous $id rtp=$rate") }
+    }
+
+    private fun rates(payout: Payout): Map<String, Double> =
+        Catalog.games.associate { game -> game.id to returnRate(game.id, payout, spins = 12_000) }
+
+    private fun returnRate(gameId: String, payout: Payout, spins: Int): Double {
+        val casino = Casino(
+            Rng(42),
+            PlayerState(credits = 1_000_000_000L, denom = 1, betPerLine = 1, payout = payout),
+        )
         var wagered = 0L
         var won = 0L
         repeat(spins) {

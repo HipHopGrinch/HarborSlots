@@ -68,6 +68,87 @@ private fun patchReel(baskets: Int, coins: Int): List<Symbol> = strip(
     Symbol.JACK to 7,
 )
 
+private fun kelpReel(extraOtter: Int): List<Symbol> = strip(
+    Symbol.OTTER to (1 + extraOtter),
+    Symbol.KELP to 4,
+    Symbol.STARFISH to 4,
+    Symbol.SHELL to 5,
+    Symbol.CRAB to 5,
+    Symbol.PEARL to 6,
+    Symbol.ACE to 7,
+    Symbol.KING to 7,
+    Symbol.QUEEN to 7,
+    Symbol.JACK to 7,
+    Symbol.TEN to 6,
+)
+
+private fun mesaReel(extraBadge: Int): List<Symbol> = strip(
+    Symbol.BADGE to (1 + extraBadge),
+    Symbol.CACTUS to 4,
+    Symbol.CANTEEN to 4,
+    Symbol.LASSO to 5,
+    Symbol.SUNSET to 5,
+    Symbol.SPUR to 6,
+    Symbol.ACE to 7,
+    Symbol.KING to 7,
+    Symbol.QUEEN to 7,
+    Symbol.JACK to 7,
+    Symbol.TEN to 6,
+    Symbol.NINE to 6,
+)
+
+private fun reefReel(extraPuffer: Int): List<Symbol> = strip(
+    Symbol.PUFFER to (2 + extraPuffer),
+    Symbol.CORAL to 6,
+    Symbol.BUBBLE to 6,
+    Symbol.ANEMONE to 5,
+    Symbol.TURTLE to 5,
+    Symbol.CONCH to 6,
+    Symbol.ACE to 8,
+    Symbol.KING to 8,
+    Symbol.QUEEN to 7,
+    Symbol.JACK to 7,
+)
+
+private fun beaconReel(beacons: Int): List<Symbol> = strip(
+    Symbol.BEACON to beacons,
+    Symbol.PUFFIN to 2,
+    Symbol.FOGHORN to 4,
+    Symbol.LIFERING to 4,
+    Symbol.OILSKIN to 5,
+    Symbol.CHART to 5,
+    Symbol.ACE to 6,
+    Symbol.KING to 6,
+    Symbol.QUEEN to 6,
+    Symbol.JACK to 6,
+    Symbol.TEN to 6,
+)
+
+private val waysCardPays = mapOf(
+    Symbol.ACE to pay(2, 5, 12),
+    Symbol.KING to pay(2, 5, 12),
+    Symbol.QUEEN to pay(1, 4, 10),
+    Symbol.JACK to pay(1, 4, 10),
+    Symbol.TEN to pay(1, 3, 8),
+    Symbol.NINE to pay(1, 3, 8),
+)
+
+private val mesaCardPays = mapOf(
+    Symbol.ACE to pay(24, 60, 140),
+    Symbol.KING to pay(24, 60, 140),
+    Symbol.QUEEN to pay(16, 48, 120),
+    Symbol.JACK to pay(16, 48, 120),
+    Symbol.TEN to pay(12, 36, 96),
+    Symbol.NINE to pay(12, 36, 96),
+)
+
+private val clusterCardPays = mapOf(
+    Symbol.ACE to pay(2, 5, 12),
+    Symbol.KING to pay(2, 5, 12),
+    Symbol.QUEEN to pay(2, 4, 10),
+    Symbol.JACK to pay(2, 4, 10),
+)
+
 private val cardPays = mapOf(
     Symbol.ACE to pay(14, 30, 80),
     Symbol.KING to pay(14, 30, 80),
@@ -219,7 +300,140 @@ object Catalog {
         scatterPays = mapOf(3 to 4, 4 to 16, 5 to 50),
     )
 
-    val games: List<GameDef> = listOf(harbor, brightwork, market, patch)
+    val kelp = GameDef(
+        id = "kelp",
+        name = "Kelp Fall",
+        blurb = "Ways pay from the left, then winning symbols drop out and the reel falls again.",
+        featureLabel = "Tumbling Ways",
+        rules = """
+            Five reels, three rows, 243 ways. Wins pay for matching symbols on neighboring reels from the left, on any row. Otter is wild.
+
+            Winning symbols leave the reels. What remains falls down, and new symbols drop in from the strip above. Each later drop pays at a higher multiplier, up to ×5, for as many as six drops.
+
+            The spin still costs denomination × bet × 20.
+        """.trimIndent(),
+        kind = GameKind.TUMBLE,
+        reels = listOf(
+            kelpReel(0),
+            kelpReel(0).rotate(6),
+            kelpReel(1).rotate(11),
+            kelpReel(0).rotate(4),
+            kelpReel(0).rotate(15),
+        ),
+        paylines = PAYLINES,
+        pays = waysCardPays + mapOf(
+            Symbol.OTTER to pay(8, 20, 50),
+            Symbol.KELP to pay(5, 12, 30),
+            Symbol.STARFISH to pay(4, 10, 24),
+            Symbol.SHELL to pay(3, 8, 18),
+            Symbol.CRAB to pay(2, 6, 14),
+            Symbol.PEARL to pay(2, 5, 12),
+        ),
+        wild = Symbol.OTTER,
+        blockers = emptySet(),
+    )
+
+    val mesa = GameDef(
+        id = "mesa",
+        name = "Mesa Trail",
+        blurb = "Any row counts. Match a symbol on the reels to the left and the ways multiply.",
+        featureLabel = "243 Ways",
+        rules = """
+            Five reels, three rows, 243 ways. A symbol pays when it shows on consecutive reels starting at the left, no matter which row. The number of ways is how many spots matched on each of those reels. Badge is wild.
+
+            There is no tumble and no free-spin round. Every win is paid on the spin that landed it.
+
+            The spin still costs denomination × bet × 20.
+        """.trimIndent(),
+        kind = GameKind.WAYS,
+        reels = listOf(
+            mesaReel(0),
+            mesaReel(0).rotate(7),
+            mesaReel(1).rotate(12),
+            mesaReel(0).rotate(3),
+            mesaReel(0).rotate(16),
+        ),
+        paylines = PAYLINES,
+        pays = mesaCardPays + mapOf(
+            Symbol.BADGE to pay(90, 220, 520),
+            Symbol.CACTUS to pay(60, 140, 320),
+            Symbol.CANTEEN to pay(48, 110, 250),
+            Symbol.LASSO to pay(36, 90, 200),
+            Symbol.SUNSET to pay(28, 70, 160),
+            Symbol.SPUR to pay(24, 60, 140),
+        ),
+        wild = Symbol.BADGE,
+        blockers = emptySet(),
+    )
+
+    val reef = GameDef(
+        id = "reef",
+        name = "Puffer Reef",
+        blurb = "Touching matches form a cluster. Bigger schools pay more, and puffers join the best neighbor.",
+        featureLabel = "Cluster Pays",
+        rules = """
+            Five reels, three rows. There are no paylines. A cluster is three or more of the same symbol touching by an edge. Puffer is wild and joins the best-paying cluster it touches.
+
+            A cluster of three, four, or five uses that size's prize. Larger clusters pay the five-symbol prize again for each extra symbol past four.
+
+            The spin still costs denomination × bet × 20.
+        """.trimIndent(),
+        kind = GameKind.CLUSTER,
+        reels = listOf(
+            reefReel(0),
+            reefReel(0).rotate(5),
+            reefReel(1).rotate(9),
+            reefReel(0).rotate(14),
+            reefReel(0).rotate(2),
+        ),
+        paylines = PAYLINES,
+        pays = clusterCardPays + mapOf(
+            Symbol.PUFFER to pay(8, 18, 48),
+            Symbol.CORAL to pay(5, 12, 30),
+            Symbol.BUBBLE to pay(4, 10, 24),
+            Symbol.ANEMONE to pay(3, 8, 18),
+            Symbol.TURTLE to pay(3, 6, 16),
+            Symbol.CONCH to pay(2, 5, 12),
+        ),
+        wild = Symbol.PUFFER,
+        blockers = emptySet(),
+    )
+
+    val beacon = GameDef(
+        id = "beacon",
+        name = "Beacon Wheel",
+        blurb = "A line game on the rocks. Three beacons turn the prize wheel.",
+        featureLabel = "Prize Wheel",
+        rules = """
+            Five reels, three rows, 20 lines. Wins pay left to right. Puffin is wild. Beacon does not make line wins.
+
+            Three or more Beacons pay a scatter prize and spin the prize wheel. The wedges are Ripple, Swell, Crest, Breaker, Beam, and Lighthouse. The weight of each wedge is the table in this app.
+
+            The triggering bet is the bet the wheel multiplies.
+        """.trimIndent(),
+        kind = GameKind.WHEEL,
+        reels = listOf(
+            beaconReel(3),
+            beaconReel(3).rotate(6),
+            beaconReel(4).rotate(11),
+            beaconReel(3).rotate(4),
+            beaconReel(3).rotate(15),
+        ),
+        paylines = PAYLINES,
+        pays = cardPays + mapOf(
+            Symbol.PUFFIN to pay(76, 190, 540),
+            Symbol.FOGHORN to pay(44, 120, 320),
+            Symbol.LIFERING to pay(34, 86, 240),
+            Symbol.OILSKIN to pay(24, 60, 170),
+            Symbol.CHART to pay(18, 48, 130),
+        ),
+        wild = Symbol.PUFFIN,
+        blockers = setOf(Symbol.BEACON),
+        scatter = Symbol.BEACON,
+        scatterPays = mapOf(3 to 4, 4 to 16, 5 to 60),
+    )
+
+    val games: List<GameDef> = listOf(harbor, brightwork, market, patch, kelp, mesa, reef, beacon)
 
     fun byId(id: String): GameDef = games.first { it.id == id }
 }

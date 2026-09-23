@@ -2,7 +2,7 @@
 
 Original cruise-casino slots for Android. Play money, a saved bankroll, and voyage tallies for eight cruise lines.
 
-The games are Harbor Hold, Brightwork, Night Market, and Penny Patch. Names, symbols, reel strips, and prize weights belong to this project.
+The games are Harbor Hold, Brightwork, Night Market, Penny Patch, Kelp Fall, Mesa Trail, Puffer Reef, and Beacon Wheel. Names, symbols, reel strips, and prize weights belong to this project.
 
 ## Outcomes
 

@@ -37,6 +37,30 @@ fun symbolArt(symbol: Symbol): Int? = when (symbol) {
     Symbol.CLOVER -> R.drawable.sym_clover
     Symbol.BOOT -> R.drawable.sym_boot
     Symbol.BASKET -> R.drawable.sym_basket
+    Symbol.OTTER -> R.drawable.sym_otter
+    Symbol.KELP -> R.drawable.sym_kelp
+    Symbol.STARFISH -> R.drawable.sym_starfish
+    Symbol.SHELL -> R.drawable.sym_shell
+    Symbol.CRAB -> R.drawable.sym_crab
+    Symbol.PEARL -> R.drawable.sym_pearl
+    Symbol.BADGE -> R.drawable.sym_badge
+    Symbol.CACTUS -> R.drawable.sym_cactus
+    Symbol.CANTEEN -> R.drawable.sym_canteen
+    Symbol.LASSO -> R.drawable.sym_lasso
+    Symbol.SUNSET -> R.drawable.sym_sunset
+    Symbol.SPUR -> R.drawable.sym_spur
+    Symbol.PUFFER -> R.drawable.sym_puffer
+    Symbol.CORAL -> R.drawable.sym_coral
+    Symbol.BUBBLE -> R.drawable.sym_bubble
+    Symbol.ANEMONE -> R.drawable.sym_anemone
+    Symbol.TURTLE -> R.drawable.sym_turtle
+    Symbol.CONCH -> R.drawable.sym_conch
+    Symbol.PUFFIN -> R.drawable.sym_puffin
+    Symbol.BEACON -> R.drawable.sym_beacon
+    Symbol.FOGHORN -> R.drawable.sym_foghorn
+    Symbol.LIFERING -> R.drawable.sym_lifering
+    Symbol.OILSKIN -> R.drawable.sym_oilskin
+    Symbol.CHART -> R.drawable.sym_chart
     Symbol.ACE -> R.drawable.sym_ace
     Symbol.KING -> R.drawable.sym_king
     Symbol.QUEEN -> R.drawable.sym_queen

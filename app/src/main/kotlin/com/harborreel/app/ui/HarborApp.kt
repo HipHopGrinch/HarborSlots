@@ -77,6 +77,7 @@ fun HarborApp(model: CasinoViewModel) {
                         onClear = model::clearCash,
                         onClearHistory = model::clearHistory,
                         onResetPoints = model::resetPoints,
+                        onSetPayout = model::setPayout,
                     )
                 }
             }
