@@ -109,7 +109,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
     var blurAmounts by remember(game.id) { mutableStateOf(List(5) { 0f }) }
     var celebrating by remember(game.id) { mutableStateOf(false) }
     var callout by remember(game.id) { mutableStateOf<String?>(null) }
-    var wheelIndex by remember(game.id) { mutableStateOf<Int?>(null) }
+    var wheelBonus by remember(game.id) { mutableStateOf<WheelSpin?>(null) }
     var held by remember(game.id) { mutableStateOf(noHolds()) }
     val symbols = remember(game.id) { game.reels.flatten().distinct() }
 
@@ -131,7 +131,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
         busy = true
         celebrating = false
         callout = null
-        wheelIndex = null
+        wheelBonus = null
         shownWin = 0L
         highlights = emptySet()
         banner = "Spinning…"
@@ -209,10 +209,10 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
                 banner = "${feature.title}. ${feature.detail}"
             }
             is WheelSpin -> {
-                callout = "PRIZE WHEEL"
-                wheelIndex = feature.wedgeIndex
+                wheelBonus = feature
                 banner = "${feature.title}. ${feature.detail}"
-                delay(1700)
+                delay(PRIZE_WHEEL_SPIN_MS.toLong() + PRIZE_WHEEL_HOLD_MS)
+                wheelBonus = null
             }
             null -> Unit
             else -> {
@@ -221,14 +221,12 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             }
         }
         shownWin = spin.totalWin
-        celebrating = spin.totalWin > 0L
-        if (spin.totalWin > 0L) {
+        if (spin.feature !is WheelSpin && spin.totalWin > 0L) {
+            celebrating = true
             delay(1700)
             celebrating = false
-            callout = null
-        } else {
-            callout = null
         }
+        callout = null
         model.markPresented(spin.spinId)
         model.revealBankroll()
         busy = false
@@ -283,9 +281,6 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
             SceneLife(game.id, Modifier.fillMaxSize())
-            wheelIndex?.let { index ->
-                PrizeWheel(index, Modifier.fillMaxSize().padding(12.dp))
-            }
         }
 
         BoxWithConstraints(
@@ -348,6 +343,14 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             onBet = model::nudgeBet,
         )
     }
+        wheelBonus?.let { feature ->
+            PrizeWheelBonus(
+                wedgeIndex = feature.wedgeIndex,
+                wedgeName = feature.wedge,
+                prizeAmount = feature.amount.money(),
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
     }
 }
 

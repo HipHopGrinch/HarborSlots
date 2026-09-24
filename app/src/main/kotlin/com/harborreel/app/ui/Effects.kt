@@ -16,22 +16,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -218,17 +225,29 @@ private fun FlyingGull(flight: Float, phase: Float, gullHeight: Dp) {
     }
 }
 
+const val PRIZE_WHEEL_SPIN_MS = 2400
+const val PRIZE_WHEEL_HOLD_MS = 1800
+
 @Composable
-fun PrizeWheel(wedgeIndex: Int, modifier: Modifier = Modifier) {
-    val count = WHEEL_WEDGES.size
+fun PrizeWheelBonus(
+    wedgeIndex: Int,
+    wedgeName: String,
+    prizeAmount: String,
+    modifier: Modifier = Modifier,
+) {
+    val count = WHEEL_WEDGES.size.coerceAtLeast(1)
     val sweep = 360f / count
     val rotation = remember(wedgeIndex) { Animatable(0f) }
+    var landed by remember(wedgeIndex) { mutableStateOf(false) }
     LaunchedEffect(wedgeIndex) {
+        landed = false
         rotation.snapTo(0f)
+        // Four turns, then the chosen wedge's center sits under the top pointer.
         rotation.animateTo(
-            1440f - wedgeIndex * sweep - sweep / 2f,
-            tween(1600, easing = FastOutSlowInEasing),
+            4 * 360f - wedgeIndex * sweep - sweep / 2f,
+            tween(PRIZE_WHEEL_SPIN_MS, easing = FastOutSlowInEasing),
         )
+        landed = true
     }
     val colors = listOf(
         Color(0xFF4DB7FF),
@@ -238,30 +257,100 @@ fun PrizeWheel(wedgeIndex: Int, modifier: Modifier = Modifier) {
         Color(0xFFFF8A6A),
         Color(0xFF2EC4B6),
     )
-    Box(modifier, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize()) {
-            val radius = size.minDimension * 0.42f
-            val center = Offset(size.width / 2f, size.height / 2f)
-            val spin = rotation.value
-            repeat(count) { index ->
-                drawArc(
-                    color = colors[index % colors.size],
-                    startAngle = -90f + index * sweep + spin,
-                    sweepAngle = sweep - 1.5f,
-                    useCenter = true,
-                    topLeft = Offset(center.x - radius, center.y - radius),
-                    size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2),
+    Box(
+        modifier.background(Color(0xF0061018)),
+        contentAlignment = Alignment.Center,
+    ) {
+        BoxWithConstraints(Modifier.fillMaxSize().padding(20.dp), contentAlignment = Alignment.Center) {
+            val wheel = minOf(maxWidth, maxHeight * 0.72f)
+            val labelSize = (wheel.value * 0.048f).coerceIn(11f, 16f).sp
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(Modifier.size(wheel)) {
+                    Canvas(Modifier.fillMaxSize()) {
+                        val radius = size.minDimension * 0.40f
+                        val center = Offset(size.width / 2f, size.height / 2f)
+                        val disc = Size(radius * 2, radius * 2)
+                        val topLeft = Offset(center.x - radius, center.y - radius)
+                        val spin = rotation.value
+                        repeat(count) { index ->
+                            drawArc(
+                                color = colors[index % colors.size],
+                                startAngle = -90f + index * sweep + spin,
+                                sweepAngle = sweep - 1.2f,
+                                useCenter = true,
+                                topLeft = topLeft,
+                                size = disc,
+                            )
+                        }
+                        drawCircle(color = Gold, radius = radius, center = center, style = Stroke(5.dp.toPx()))
+                        val bulbOrbit = radius + 12.dp.toPx()
+                        repeat(18) { index ->
+                            val angle = (-PI.toFloat() / 2f) + index * (PI.toFloat() * 2f / 18f)
+                            drawCircle(
+                                color = if (index % 2 == 0) Gold else Color(0xFFFFF6C8),
+                                radius = 3.4.dp.toPx(),
+                                center = Offset(center.x + cos(angle) * bulbOrbit, center.y + sin(angle) * bulbOrbit),
+                            )
+                        }
+                        val labelPaint = android.graphics.Paint().apply {
+                            color = android.graphics.Color.WHITE
+                            textAlign = android.graphics.Paint.Align.CENTER
+                            textSize = labelSize.toPx()
+                            isFakeBoldText = true
+                            isAntiAlias = true
+                            setShadowLayer(4f, 0f, 1f, android.graphics.Color.BLACK)
+                        }
+                        val labelOffset = (labelPaint.ascent() + labelPaint.descent()) / 2f
+                        repeat(count) { index ->
+                            val name = WHEEL_WEDGES[index].first.name ?: ""
+                            val mid = (-90f + index * sweep + sweep / 2f + spin) * (PI.toFloat() / 180f)
+                            val at = radius * 0.64f
+                            drawContext.canvas.nativeCanvas.drawText(
+                                name,
+                                center.x + cos(mid) * at,
+                                center.y + sin(mid) * at - labelOffset,
+                                labelPaint,
+                            )
+                        }
+                        drawCircle(Color(0xFF1A1208), radius * 0.22f, center)
+                        drawCircle(Gold, radius * 0.16f, center, style = Stroke(3.dp.toPx()))
+                        if (landed) {
+                            drawArc(
+                                color = Color.White,
+                                startAngle = -90f - sweep / 2f,
+                                sweepAngle = sweep - 1.2f,
+                                useCenter = false,
+                                topLeft = topLeft,
+                                size = disc,
+                                style = Stroke(4.dp.toPx()),
+                            )
+                        }
+                        val pointer = Path().apply {
+                            moveTo(center.x, center.y - radius + 18.dp.toPx())
+                            lineTo(center.x - 16.dp.toPx(), center.y - radius - 14.dp.toPx())
+                            lineTo(center.x + 16.dp.toPx(), center.y - radius - 14.dp.toPx())
+                            close()
+                        }
+                        drawPath(pointer, Gold)
+                        drawPath(pointer, Color(0xFF1A1208), style = Stroke(1.5.dp.toPx()))
+                    }
+                }
+                Text(
+                    if (landed) wedgeName else "Spinning",
+                    color = Gold,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 28.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 18.dp),
+                )
+                Text(
+                    if (landed) prizeAmount else " ",
+                    color = Foam,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 22.sp,
+                    textAlign = TextAlign.Center,
                 )
             }
-            drawCircle(Color(0xFF1A1208), radius * 0.28f, center)
-            drawCircle(Gold, radius * 0.22f, center)
-            val pointer = Path().apply {
-                moveTo(center.x, center.y - radius - 8.dp.toPx())
-                lineTo(center.x - 14.dp.toPx(), center.y - radius + 16.dp.toPx())
-                lineTo(center.x + 14.dp.toPx(), center.y - radius + 16.dp.toPx())
-                close()
-            }
-            drawPath(pointer, Gold)
         }
     }
 }
