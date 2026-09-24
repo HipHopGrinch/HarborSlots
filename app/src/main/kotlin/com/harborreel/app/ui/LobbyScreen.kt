@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.harborreel.app.R
 import com.harborreel.engine.Catalog
-import com.harborreel.engine.CruiseLines
 import com.harborreel.engine.GameDef
 import com.harborreel.engine.PlayerState
 
@@ -69,19 +68,35 @@ fun LobbyScreen(snapshot: PlayerState, onOpen: (String) -> Unit) {
                 GamePoster(game, Modifier, onOpen)
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             BalancePlaque("CASH", snapshot.credits.money(), Modifier.weight(1f))
             BalancePlaque(
-                CruiseLines.nameOf(snapshot.lineId).uppercase(),
-                "${snapshot.points[snapshot.lineId]?.grouped() ?: "0"} PTS",
-                Modifier.weight(1f),
+                label = null,
+                value = "${snapshot.points[snapshot.lineId]?.grouped() ?: "0"} PTS",
+                modifier = Modifier.weight(1f),
+                labelContent = {
+                    CruiseLineName(
+                        lineId = snapshot.lineId,
+                        capHeight = 8.dp,
+                        emojiBox = 15.dp,
+                        centered = true,
+                    )
+                },
             )
         }
     }
 }
 
 @Composable
-private fun BalancePlaque(label: String, value: String, modifier: Modifier) {
+private fun BalancePlaque(
+    label: String?,
+    value: String,
+    modifier: Modifier,
+    labelContent: (@Composable () -> Unit)? = null,
+) {
     val shape = RoundedCornerShape(14.dp)
     Column(
         modifier
@@ -97,15 +112,26 @@ private fun BalancePlaque(label: String, value: String, modifier: Modifier) {
             .padding(horizontal = 8.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            label,
-            color = Gold,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.8.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (labelContent != null) {
+                labelContent()
+            } else {
+                Text(
+                    label.orEmpty(),
+                    color = Gold,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.8.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
         Text(
             value,
             color = Foam,

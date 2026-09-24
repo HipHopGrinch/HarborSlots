@@ -24,12 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,14 +31,6 @@ import androidx.compose.ui.unit.sp
 import com.harborreel.engine.CruiseLine
 import com.harborreel.engine.CruiseLines
 import com.harborreel.engine.PlayerState
-
-private val WordmarkRed = Color(0xFFEE2E24)
-private val ScriptRed = Color(0xFFE10A17)
-private val WordmarkIvory = Color(0xFFF6F1E4)
-
-private val WordmarkStyle = TextStyle(
-    platformStyle = PlatformTextStyle(includeFontPadding = false),
-)
 
 @Composable
 fun VoyageScreen(
@@ -125,7 +111,12 @@ private fun LineRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            LineWordmark(line.id, line.name)
+            CruiseLineName(
+                lineId = line.id,
+                capHeight = 14.dp,
+                emojiBox = 24.dp,
+                centered = false,
+            )
             Row(
                 modifier = Modifier.padding(top = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -171,107 +162,5 @@ private fun lineMeta(line: CruiseLine, points: Long, toward: Long): String {
         "${points.grouped()} pts  ·  $rate  ·  ${toward.money()} to next"
     } else {
         "${points.grouped()} pts  ·  $rate"
-    }
-}
-
-@Composable
-private fun LineWordmark(id: String, name: String) {
-    when (id) {
-        "carnival" -> Text(
-            name,
-            color = WordmarkRed,
-            fontFamily = MartelHeavy,
-            fontWeight = FontWeight.Black,
-            fontSize = 21.sp,
-            letterSpacing = 0.4.sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-            modifier = Modifier.graphicsLayer {
-                scaleX = 1.06f
-                transformOrigin = TransformOrigin(0f, 0.5f)
-            },
-        )
-        "royal" -> Text(
-            name,
-            color = WordmarkIvory,
-            fontFamily = EbGaramond,
-            fontWeight = FontWeight.Normal,
-            fontSize = 18.sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-        )
-        "norwegian" -> Text(
-            name,
-            color = Color.White,
-            fontFamily = JostBoldItalic,
-            fontWeight = FontWeight.Bold,
-            fontStyle = FontStyle.Italic,
-            fontSize = 22.sp,
-            letterSpacing = (-0.4).sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-        )
-        "princess" -> Text(
-            name,
-            color = Color.White,
-            fontFamily = InterBold,
-            fontWeight = FontWeight.Bold,
-            fontSize = 22.sp,
-            letterSpacing = (-0.4).sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-            modifier = Modifier.graphicsLayer {
-                scaleX = 0.98f
-                transformOrigin = TransformOrigin(0f, 0.5f)
-            },
-        )
-        "celebrity" -> Text(
-            name,
-            color = Color.White,
-            fontFamily = RobotoRegular,
-            fontWeight = FontWeight.Normal,
-            fontSize = 22.sp,
-            letterSpacing = (-0.5).sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-        )
-        "holland" -> Text(
-            name,
-            color = WordmarkIvory,
-            fontFamily = PlayfairBold,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            letterSpacing = 0.2.sp,
-            maxLines = 1,
-            softWrap = false,
-            overflow = TextOverflow.Clip,
-            style = WordmarkStyle,
-        )
-        "msc" -> Text(
-            name,
-            color = Color.White,
-            fontFamily = DmSansSemiBold,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 22.sp,
-            letterSpacing = 0.4.sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-        )
-        else -> Text(
-            name,
-            color = ScriptRed,
-            fontFamily = CaveatSemiBold,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 26.sp,
-            maxLines = 1,
-            softWrap = false,
-            style = WordmarkStyle,
-        )
     }
 }

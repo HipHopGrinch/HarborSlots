@@ -11,10 +11,10 @@ object CruiseLines {
     val all: List<CruiseLine> = listOf(
         CruiseLine("carnival", "🎪 Carnivore", 200),
         CruiseLine("royal", "👑 Regal Caribbean", 500),
-        CruiseLine("norwegian", "🧭 Nordician", 500),
-        CruiseLine("princess", "🖨️ Prints-S", 200),
-        CruiseLine("celebrity", "✨ Celebrating", 500),
-        CruiseLine("holland", "⚓ All Hand America", 200),
+        CruiseLine("norwegian", "🧭 NORDICIAN", 500),
+        CruiseLine("princess", "🖨️ PRINTS-S", 200),
+        CruiseLine("celebrity", "✨ CELEBRATING", 500),
+        CruiseLine("holland", "⚓ ALL HAND AMERICA", 200),
         CruiseLine("msc", "🌊 MS-Sea", 300),
         CruiseLine("virgin", "🦊 Vixen Voyagers", 500),
     )
