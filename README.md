@@ -6,7 +6,7 @@ The games are Harbor Hold, Brightwork, Night Market, Penny Patch, Kelp Fall, Mes
 
 ## Game types
 
-Each game belongs to one of eight types (Lock and Respin, Build and Bonus, Free Spins, Pot Bonus, Tumbling Ways, 243 Ways, Cluster Pays, Prize Wheel), defined in `engine/src/main/kotlin/com/harborreel/engine/GameTypes.kt`. The circled "i" on a game shows its type, the type's description, the game's own note, and real cabinets of that type seen on a cruise floor.
+Each game belongs to one of eight types (Lock and Respin, Build and Bonus, Free Spins, Pot Bonus, Tumbling Ways, 243 Ways, Cluster Pays, Prize Wheel), defined in `engine/src/main/kotlin/com/harborreel/engine/GameTypes.kt`. The circled "i" on a game lists the real cruise-floor slots it plays like, and why: the type they share.
 
 ## Outcomes
 

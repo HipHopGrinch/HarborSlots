@@ -123,7 +123,7 @@ private fun GamePoster(game: GameDef, modifier: Modifier, onOpen: (String) -> Un
     val shape = RoundedCornerShape(18.dp)
     var info by remember(game.id) { mutableStateOf(false) }
     if (info) {
-        GameTypeDialog(game) { info = false }
+        SimilarSlotsDialog(game) { info = false }
     }
     Box(
         modifier

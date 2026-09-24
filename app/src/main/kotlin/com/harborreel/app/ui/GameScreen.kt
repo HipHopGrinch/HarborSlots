@@ -122,7 +122,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
         )
     }
     if (info) {
-        GameTypeDialog(game) { info = false }
+        SimilarSlotsDialog(game) { info = false }
     }
 
     LaunchedEffect(outcome?.spinId) {

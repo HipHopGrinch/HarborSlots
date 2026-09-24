@@ -43,7 +43,7 @@ fun GameInfoButton(
     ) {
         Icon(
             Icons.Outlined.Info,
-            contentDescription = "${game.name} game type",
+            contentDescription = "Real slots like ${game.name}",
             tint = if (enabled) Gold else Gold.copy(alpha = 0.35f),
             modifier = Modifier
                 .size(26.dp)
@@ -54,40 +54,35 @@ fun GameInfoButton(
 }
 
 @Composable
-fun GameTypeDialog(game: GameDef, onDismiss: () -> Unit) {
+fun SimilarSlotsDialog(game: GameDef, onDismiss: () -> Unit) {
     val type = game.type
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Column {
-                SectionLabel("GAME TYPE")
-                Text(type.title)
-                type.alsoCalled?.let {
-                    Text(it, color = Gold, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                }
+                SectionLabel(game.name.uppercase())
+                Text("Real slots like this")
             }
         },
         text = {
             Column(
                 Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(type.description)
-                SectionLabel(game.name.uppercase(), Modifier.padding(top = 8.dp))
-                Text(game.blurb)
-                SectionLabel("ON THE SHIP FLOOR", Modifier.padding(top = 8.dp))
                 type.floorExamples.forEach { example ->
                     Column {
-                        Text(
-                            example.maker?.let { "${example.name} · $it" } ?: example.name,
-                            color = Foam,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Text(example.note, fontSize = 13.sp)
+                        Text(example.name, color = Foam, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        example.maker?.let { Text(it, color = Gold, fontSize = 12.sp) }
                     }
                 }
                 type.floorNote?.let { Text(it, fontSize = 13.sp) }
+                SectionLabel("WHY", Modifier.padding(top = 6.dp))
+                Text(
+                    type.alsoCalled?.let { "${type.title} ($it)" } ?: type.title,
+                    color = Foam,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(type.description, fontSize = 13.sp)
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
