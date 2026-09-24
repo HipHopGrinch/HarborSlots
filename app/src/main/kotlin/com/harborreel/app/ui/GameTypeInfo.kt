@@ -70,10 +70,11 @@ fun SimilarSlotsDialog(game: GameDef, onDismiss: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 type.floorExamples.forEach { example ->
-                    Column {
-                        Text(example.name, color = Foam, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        example.maker?.let { Text(it, color = Gold, fontSize = 12.sp) }
-                    }
+                    Text(
+                        "${example.name} (${example.note})",
+                        color = Foam,
+                        fontSize = 15.sp,
+                    )
                 }
                 type.floorNote?.let { Text(it, fontSize = 13.sp) }
                 SectionLabel("WHY", Modifier.padding(top = 6.dp))

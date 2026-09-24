@@ -9,14 +9,14 @@ data class CruiseLine(
 
 object CruiseLines {
     val all: List<CruiseLine> = listOf(
-        CruiseLine("carnival", "Carnival", 200),
-        CruiseLine("royal", "Royal Caribbean", 500),
-        CruiseLine("norwegian", "Norwegian", 500),
-        CruiseLine("princess", "Princess", 200),
-        CruiseLine("celebrity", "Celebrity", 500),
-        CruiseLine("holland", "Holland America", 200),
-        CruiseLine("msc", "MSC", 300),
-        CruiseLine("virgin", "Virgin Voyages", 500),
+        CruiseLine("carnival", "🎪 Carnivore", 200),
+        CruiseLine("royal", "👑 Regal Caribbean", 500),
+        CruiseLine("norwegian", "🧭 Nordician", 500),
+        CruiseLine("princess", "🖨️ Prints-S", 200),
+        CruiseLine("celebrity", "✨ Celebrating", 500),
+        CruiseLine("holland", "⚓ All Hand America", 200),
+        CruiseLine("msc", "🌊 MS-Sea", 300),
+        CruiseLine("virgin", "🦊 Vixen Voyagers", 500),
     )
 
     fun byId(id: String): CruiseLine = all.firstOrNull { it.id == id } ?: all.first()
@@ -31,7 +31,7 @@ object CruiseLines {
     val ids: List<String> = all.map { it.id }
     const val defaultId: String = "carnival"
 
-    fun nameOf(id: String): String = all.firstOrNull { it.id == id }?.name ?: "Carnival"
+    fun nameOf(id: String): String = all.firstOrNull { it.id == id }?.name ?: all.first().name
 }
 
 val DENOM_CENTS: List<Int> = listOf(1, 2, 5, 10, 25, 50, 100, 200, 500)
