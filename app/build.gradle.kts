@@ -1,8 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Release signing comes from HARBOR_* environment variables, else the first properties file found:
+// $HARBOR_SIGNING_PROPERTIES, keystore.properties at the repo root (gitignored), then the cloud project store.
+// Keys: storeFile, storePassword, keyAlias, keyPassword. Without them, release builds come out unsigned.
+val signingProps = Properties().apply {
+    listOfNotNull(
+        System.getenv("HARBOR_SIGNING_PROPERTIES"),
+        rootProject.file("keystore.properties").path,
+        "/cursor/stores/bc-fab66b0a-5b06-4520-b355-67c16b998019/artifacts/signing-notes.txt",
+    ).map(::File).firstOrNull { it.isFile }?.reader()?.use { load(it) }
+}
+
+fun signingValue(env: String, key: String): String? = System.getenv(env) ?: signingProps.getProperty(key)
+
+val releaseKeystore: File? = signingValue("HARBOR_KEYSTORE", "storeFile")
+    ?.let { rootProject.file(it) }
+    ?.takeIf { it.isFile }
 
 android {
     namespace = "com.harborreel.app"
@@ -16,9 +35,21 @@ android {
         versionName = "1.18"
     }
 
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = signingValue("HARBOR_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("HARBOR_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("HARBOR_KEY_PASSWORD", "keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
