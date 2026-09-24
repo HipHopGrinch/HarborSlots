@@ -66,7 +66,7 @@ fun VoyageScreen(
             Column(Modifier.padding(bottom = 6.dp)) {
                 Text("Voyage", color = Gold, fontSize = 30.sp, fontWeight = FontWeight.Black)
                 Text(
-                    "Pick the line that earns points. These tallies stay on this phone.",
+                    "Select a cruise theme to track your simulated point milestones. For entertainment purposes only; no real-world value or affiliation.",
                     color = Foam.copy(alpha = 0.75f),
                     modifier = Modifier.padding(top = 4.dp),
                 )

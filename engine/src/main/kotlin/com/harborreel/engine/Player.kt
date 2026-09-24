@@ -10,7 +10,7 @@ data class CruiseLine(
 object CruiseLines {
     val all: List<CruiseLine> = listOf(
         CruiseLine("carnival", "🎪 Carnivore", 200),
-        CruiseLine("royal", "👑 Regal Caribbean", 500),
+        CruiseLine("royal", "🛳️ Regal Caribbean", 500),
         CruiseLine("norwegian", "🧭 NORDICIAN", 500),
         CruiseLine("princess", "🖨️ PRINTS-S", 200),
         CruiseLine("celebrity", "✨ CELEBRATING", 500),
