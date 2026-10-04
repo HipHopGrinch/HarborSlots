@@ -17,6 +17,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,12 +41,13 @@ private val tabs = listOf(
 fun HarborApp(model: CasinoViewModel) {
     val nav = rememberNavController()
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Navy)
-            .windowInsetsPadding(WindowInsets.safeDrawing),
-    ) {
+    CompositionLocalProvider(LocalHarborSfx provides model.sfx) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Navy)
+                .windowInsetsPadding(WindowInsets.safeDrawing),
+        ) {
         NavHost(
             navController = nav,
             startDestination = "lobby",
@@ -73,6 +75,8 @@ fun HarborApp(model: CasinoViewModel) {
                 TabPage(nav) {
                     BankScreen(
                         snapshot = model.snapshot,
+                        muted = model.sfx.muted,
+                        onSetMuted = model.sfx::setSoundMuted,
                         onSetCash = model::setCash,
                         onClear = model::clearCash,
                         onClearHistory = model::clearHistory,
@@ -90,6 +94,7 @@ fun HarborApp(model: CasinoViewModel) {
                 )
             }
         }
+    }
     }
 }
 

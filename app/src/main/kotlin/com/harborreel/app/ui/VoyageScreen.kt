@@ -39,6 +39,7 @@ fun VoyageScreen(
     onReset: () -> Unit,
     onResetLine: (String) -> Unit,
 ) {
+    val sfx = LocalHarborSfx.current
     var confirm by rememberSaveable { mutableStateOf(false) }
     if (confirm) {
         AlertDialog(
@@ -78,7 +79,10 @@ fun VoyageScreen(
                 selected = line.id == snapshot.lineId,
                 points = snapshot.points[line.id] ?: 0L,
                 toward = snapshot.pointRemainder[line.id] ?: 0L,
-                onSelect = { onSelect(line.id) },
+                onSelect = {
+                    sfx?.play(Sfx.Tap)
+                    onSelect(line.id)
+                },
                 onReset = { onResetLine(line.id) },
             )
         }

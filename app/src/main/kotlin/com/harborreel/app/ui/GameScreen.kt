@@ -112,6 +112,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
     var wheelBonus by remember(game.id) { mutableStateOf<WheelSpin?>(null) }
     var held by remember(game.id) { mutableStateOf(noHolds()) }
     val symbols = remember(game.id) { game.reels.flatten().distinct() }
+    val sfx = LocalHarborSfx.current
 
     if (rules) {
         AlertDialog(
@@ -135,7 +136,8 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
         shownWin = 0L
         highlights = emptySet()
         banner = "Spinning…"
-        scrollReels(symbols, spin.grid, travel = 34, spinMs = 1650, staggerMs = 240) { nextStrips, nextPos, nextBlur ->
+        sfx?.play(Sfx.SpinStart)
+        scrollReels(symbols, spin.grid, travel = 34, spinMs = 1650, staggerMs = 240, onReelStop = { sfx?.play(Sfx.ReelStop) }) { nextStrips, nextPos, nextBlur ->
             strips = nextStrips
             positions = nextPos
             blurAmounts = nextBlur
@@ -150,12 +152,13 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             is LockRespin -> {
                 callout = "LOCK & RESPIN"
                 banner = "Lock & Respin"
+                sfx?.play(Sfx.WinBig)
                 var lockedBoard = spin.grid
                 held = buoyHolds(lockedBoard)
                 for (frame in feature.frames) {
                     highlights = emptySet()
                     banner = "Lock & Respin · ${frame.livesLeft} respin${if (frame.livesLeft == 1) "" else "s"} left"
-                    scrollReels(symbols, frame.grid, travel = 12, spinMs = 620, staggerMs = 80) { nextStrips, nextPos, nextBlur ->
+                    scrollReels(symbols, frame.grid, travel = 12, spinMs = 620, staggerMs = 80, onReelStop = { sfx?.play(Sfx.ReelStop) }) { nextStrips, nextPos, nextBlur ->
                         strips = nextStrips
                         positions = nextPos
                         blurAmounts = nextBlur
@@ -172,11 +175,12 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             }
             is FreeSpins -> {
                 callout = "FREE SPINS"
+                sfx?.play(Sfx.WinBig)
                 for (frame in feature.frames) {
                     highlights = emptySet()
                     val extra = if (frame.extraSpins > 0) "  +${frame.extraSpins} spins" else ""
                     banner = "Free spin · ${frame.spinsLeft} left · reel ${frame.wildReel + 1} wild$extra"
-                    scrollReels(symbols, frame.grid, travel = 18, spinMs = 980, staggerMs = 150) { nextStrips, nextPos, nextBlur ->
+                    scrollReels(symbols, frame.grid, travel = 18, spinMs = 980, staggerMs = 150, onReelStop = { sfx?.play(Sfx.ReelStop) }) { nextStrips, nextPos, nextBlur ->
                         strips = nextStrips
                         positions = nextPos
                         blurAmounts = nextBlur
@@ -192,6 +196,7 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             }
             is Tumble -> {
                 callout = "TUMBLE"
+                sfx?.play(Sfx.WinBig)
                 for (frame in feature.frames) {
                     highlights = emptySet()
                     banner = "Drop ×${frame.multiplier}"
@@ -218,11 +223,15 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
             else -> {
                 callout = feature.title.uppercase()
                 banner = "${feature.title}. ${feature.detail}"
+                sfx?.play(Sfx.WinBig)
             }
         }
         shownWin = spin.totalWin
         if (spin.feature !is WheelSpin && spin.totalWin > 0L) {
             celebrating = true
+            if (spin.feature == null) {
+                if (spin.totalWin >= spin.bet * 8L) sfx?.play(Sfx.WinBig) else sfx?.play(Sfx.WinSmall)
+            }
             delay(1700)
             celebrating = false
         }
@@ -320,7 +329,10 @@ fun GameScreen(gameId: String, model: CasinoViewModel, onBack: () -> Unit) {
         )
 
         Button(
-            onClick = { model.spin(game.id) },
+            onClick = {
+                sfx?.play(Sfx.Tap)
+                model.spin(game.id)
+            },
             enabled = !busy && model.bankroll >= snapshot.bet,
             modifier = Modifier
                 .fillMaxWidth()
@@ -773,6 +785,7 @@ private suspend fun scrollReels(
     travel: Int,
     spinMs: Int,
     staggerMs: Int,
+    onReelStop: ((Int) -> Unit)? = null,
     publish: (List<List<Cell>>, List<Float>, List<Float>) -> Unit,
 ) {
     if (symbols.isEmpty()) return
@@ -789,6 +802,7 @@ private suspend fun scrollReels(
     val startPositions = distances.map { 1f + it }
     val durations = List(5) { reel -> spinNs + reel * staggerNs }
     var previous = startPositions
+    val stopped = BooleanArray(5)
     val start = withFrameNanos { it }
     while (true) {
         val now = withFrameNanos { it }
@@ -803,7 +817,13 @@ private suspend fun scrollReels(
         }
         previous = next
         publish(spun, next, blur)
-        if ((0..4).all { reel -> elapsed >= durations[reel] }) break
+        for (reel in 0..4) {
+            if (!stopped[reel] && elapsed >= durations[reel]) {
+                stopped[reel] = true
+                onReelStop?.invoke(reel)
+            }
+        }
+        if (stopped.all { it }) break
     }
 }
 

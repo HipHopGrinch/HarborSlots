@@ -32,6 +32,8 @@ import com.harborreel.engine.PlayerState
 @Composable
 fun BankScreen(
     snapshot: PlayerState,
+    muted: Boolean,
+    onSetMuted: (Boolean) -> Unit,
     onSetCash: (Long) -> Unit,
     onClear: () -> Unit,
     onClearHistory: () -> Unit,
@@ -123,6 +125,15 @@ fun BankScreen(
                 TextButton(onClick = { confirmClear = true }) { Text("Clear bank") }
                 TextButton(onClick = { confirmHistory = true }) { Text("Clear history") }
                 TextButton(onClick = { confirmPoints = true }) { Text("Reset points") }
+            }
+            Text("Sound", color = Foam, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 16.dp))
+            Text(
+                "Short sounds for spins, reel stops, wins, the prize wheel, and light taps. The phone's silent switch also skips them.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+            )
+            TextButton(onClick = { onSetMuted(!muted) }) {
+                Text(if (muted) "Muted" else "On", color = if (muted) Foam else Gold, fontWeight = FontWeight.Bold)
             }
             Text("Payout", color = Foam, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 16.dp))
             Text(

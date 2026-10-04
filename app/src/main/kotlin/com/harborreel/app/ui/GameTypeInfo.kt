@@ -34,11 +34,15 @@ fun GameInfoButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    val sfx = LocalHarborSfx.current
     Box(
         modifier
             .size(40.dp)
             .clip(CircleShape)
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled, onClick = {
+                sfx?.play(Sfx.Tap)
+                onClick()
+            }),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

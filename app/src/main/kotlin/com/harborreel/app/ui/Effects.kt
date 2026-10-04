@@ -235,6 +235,7 @@ fun PrizeWheelBonus(
     prizeAmount: String,
     modifier: Modifier = Modifier,
 ) {
+    val sfx = LocalHarborSfx.current
     val count = WHEEL_WEDGES.size.coerceAtLeast(1)
     val sweep = 360f / count
     val rotation = remember(wedgeIndex) { Animatable(0f) }
@@ -242,12 +243,14 @@ fun PrizeWheelBonus(
     LaunchedEffect(wedgeIndex) {
         landed = false
         rotation.snapTo(0f)
+        sfx?.play(Sfx.WheelSpin)
         // Four turns, then the chosen wedge's center sits under the top pointer.
         rotation.animateTo(
             4 * 360f - wedgeIndex * sweep - sweep / 2f,
             tween(PRIZE_WHEEL_SPIN_MS, easing = FastOutSlowInEasing),
         )
         landed = true
+        sfx?.play(Sfx.WheelStop)
     }
     val colors = listOf(
         Color(0xFF4DB7FF),

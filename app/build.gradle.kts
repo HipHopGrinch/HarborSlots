@@ -31,8 +31,8 @@ android {
         applicationId = "com.harborreel.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 23
-        versionName = "1.21"
+        versionCode = 24
+        versionName = "1.22"
     }
 
     signingConfigs {
@@ -71,19 +71,18 @@ kotlin {
 
 val driveApkDir = "G:/My Drive/HarborReel"
 
-tasks.register<Copy>("copyDebugApkToDrive") {
-    dependsOn("assembleDebug")
-    from(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk"))
-    into(driveApkDir)
-    rename { "HarborSlots-debug.apk" }
+fun copyApkToDriveIfPresent(taskName: String, apkPath: String, destName: String) {
+    tasks.register(taskName) {
+        onlyIf { File(driveApkDir).isDirectory }
+        doLast {
+            val apk = layout.buildDirectory.file(apkPath).get().asFile
+            apk.copyTo(File(driveApkDir, destName), overwrite = true)
+        }
+    }
 }
 
-tasks.register<Copy>("copyReleaseApkToDrive") {
-    dependsOn("assembleRelease")
-    from(layout.buildDirectory.file("outputs/apk/release/app-release.apk"))
-    into(driveApkDir)
-    rename { "HarborSlots-release.apk" }
-}
+copyApkToDriveIfPresent("copyDebugApkToDrive", "outputs/apk/debug/app-debug.apk", "HarborSlots-debug.apk")
+copyApkToDriveIfPresent("copyReleaseApkToDrive", "outputs/apk/release/app-release.apk", "HarborSlots-release.apk")
 
 tasks.matching { it.name == "assembleDebug" }.configureEach {
     finalizedBy("copyDebugApkToDrive")

@@ -14,6 +14,7 @@ import com.harborreel.engine.SpinOutcome
 
 class CasinoViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("harbor_reel", Application.MODE_PRIVATE)
+    val sfx = HarborSfx(app)
     private val casino = Casino(
         rng = Rng(),
         initial = SaveCodec.decode(prefs.getString(KEY, null)),
@@ -115,6 +116,11 @@ class CasinoViewModel(app: Application) : AndroidViewModel(app) {
     private fun publish() {
         snapshot = casino.state
         prefs.edit().putString(KEY, SaveCodec.encode(casino.state)).apply()
+    }
+
+    override fun onCleared() {
+        sfx.release()
+        super.onCleared()
     }
 
     companion object {
